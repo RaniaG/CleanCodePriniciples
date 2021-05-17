@@ -90,15 +90,12 @@ namespace CodeLuau
 
         private bool IsSpeakerApproved()
         {
-            var employers = new List<string>() { "Pluralsight", "Microsoft", "Google" };
-            var isQualifiedSpeaker = YearsOfExperience > 10 || HasBlog || Certifications.Count > 3 || employers.Contains(Employer);
+            var isQualifiedSpeaker = YearsOfExperience > 10 || HasBlog || Certifications.Count > 3 || Constants.PREFFERED_EMPLOYERS.Contains(Employer);
 
             if (!isQualifiedSpeaker)
             {
                 string emailDomain = Email.Split('@').Last();
-                var oldEmailDomains = new List<string>() { "aol.com", "prodigy.com", "compuserve.com" };
-
-                isQualifiedSpeaker = !(oldEmailDomains.Contains(emailDomain) || Browser.Name == WebBrowser.BrowserName.InternetExplorer || Browser.MajorVersion < 9);
+                isQualifiedSpeaker = !(Constants.OLD_EMAIL_DOMAINS.Contains(emailDomain) || Browser.Name == WebBrowser.BrowserName.InternetExplorer || Browser.MajorVersion < 9);
             }
 
             return isQualifiedSpeaker;
@@ -111,8 +108,7 @@ namespace CodeLuau
             if (HasBlog) return true;
             if (Certifications.Count > 3) return true;
 
-            var employers = new List<string>() { "Pluralsight", "Microsoft", "Google" };
-            if (employers.Contains(Employer)) return true;
+            if (Constants.PREFFERED_EMPLOYERS.Contains(Employer)) return true;
 
             return false;
         }
@@ -128,9 +124,7 @@ namespace CodeLuau
 
         private bool IsSessionOldTechnology(Session session)
         {
-            var oldTechnologies = new List<string>() { "Cobol", "Punch Cards", "Commodore", "VBScript" };
-
-            foreach (var tech in oldTechnologies)
+            foreach (var tech in Constants.UNSUPPORTED_TECHNOLOGIES)
             {
                 if (session.Title.Contains(tech) || session.Description.Contains(tech))
                 {
