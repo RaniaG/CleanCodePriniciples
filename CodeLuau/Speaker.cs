@@ -28,11 +28,6 @@ namespace CodeLuau
 		public RegisterResponse Register(IRepository repository)
 		{
 			int? speakerId = null;
-			bool good = false;
-			bool appr = false;
-			var ot = new List<string>() { "Cobol", "Punch Cards", "Commodore", "VBScript" };
-
-			var domains = new List<string>() { "aol.com", "prodigy.com", "compuserve.com" };
 
 			if (!string.IsNullOrWhiteSpace(FirstName))
 			{
@@ -40,6 +35,7 @@ namespace CodeLuau
 				{
 					if (!string.IsNullOrWhiteSpace(Email))
 					{
+						bool good = false;
 						var emps = new List<string>() { "Pluralsight", "Microsoft", "Google" };
 
 						good = Exp > 10 || HasBlog || Certifications.Count() > 3 || emps.Contains(Employer);
@@ -47,12 +43,15 @@ namespace CodeLuau
 						if (!good)
 						{
 							string emailDomain = Email.Split('@').Last();
+							var domains = new List<string>() { "aol.com", "prodigy.com", "compuserve.com" };
 
 							if (!domains.Contains(emailDomain) && (!(Browser.Name == WebBrowser.BrowserName.InternetExplorer && Browser.MajorVersion < 9)))
 							{
 								good = true;
 							}
 						}
+						
+						bool appr = false;
 
 						if (good)
 						{
@@ -60,6 +59,7 @@ namespace CodeLuau
 							{
 								foreach (var session in Sessions)
 								{
+									var ot = new List<string>() { "Cobol", "Punch Cards", "Commodore", "VBScript" };
 
 									foreach (var tech in ot)
 									{
