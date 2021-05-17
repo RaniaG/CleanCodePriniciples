@@ -33,12 +33,6 @@ namespace CodeLuau
             if(validationError != null)
                 return new RegisterResponse(validationError);
 
-            if (!IsSpeakerApproved())
-                return new RegisterResponse(RegisterError.SpeakerDoesNotMeetStandards);
-
-            if (!IsAnySessionApproved())
-                return new RegisterResponse(RegisterError.NoSessionsApproved);
-
             if (YearsOfExperience <= 1)
             {
                 RegistrationFee = 500;
@@ -84,6 +78,12 @@ namespace CodeLuau
 
             if(!Sessions.Any())
                 return RegisterError.NoSessionsProvided;
+
+            if (!IsSpeakerApproved())
+                return RegisterError.SpeakerDoesNotMeetStandards;
+
+            if (!IsAnySessionApproved())
+                return RegisterError.NoSessionsApproved;
 
             return null;
         }
