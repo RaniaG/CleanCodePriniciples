@@ -27,45 +27,25 @@ namespace CodeLuau
 		/// <returns>speakerID</returns>
 		public RegisterResponse Register(IRepository repository)
 		{
-			int? speakerId = null;
 
-            var validationError = ValidateData();
+            var validationError = ValidateRegistration();
             if(validationError != null)
                 return new RegisterResponse(validationError);
 
-            if (YearsOfExperience <= 1)
-            {
-                RegistrationFee = 500;
-            }
-            else if (YearsOfExperience >= 2 && YearsOfExperience <= 3)
-            {
-                RegistrationFee = 250;
-            }
-            else if (YearsOfExperience >= 4 && YearsOfExperience <= 5)
-            {
-                RegistrationFee = 100;
-            }
-            else if (YearsOfExperience >= 6 && YearsOfExperience <= 9)
-            {
-                RegistrationFee = 50;
-            }
-            else
-            {
-                RegistrationFee = 0;
-            }
+            RegistrationFee = CalculateRegistrationFee();
 
-            try
-            {
-                speakerId = repository.SaveSpeaker(this);
-            }
-            catch (Exception e)
-            {
-            }
+            var speakerId = repository.SaveSpeaker(this);
 
-            return new RegisterResponse((int)speakerId);
+            return new RegisterResponse(speakerId);
 		}
 
-        private RegisterError? ValidateData()
+        private int CalculateRegistrationFee()
+        {
+            //TODO: should call the database and get the corresponding registration fee based on age
+            return 0;
+        }
+
+        private RegisterError? ValidateRegistration()
         {
             if (string.IsNullOrWhiteSpace(FirstName))
                 return RegisterError.FirstNameRequired;
@@ -133,5 +113,7 @@ namespace CodeLuau
             }
             return false;
         }
+
+        
     }
 }
