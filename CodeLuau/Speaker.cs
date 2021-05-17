@@ -29,116 +29,110 @@ namespace CodeLuau
 		{
 			int? speakerId = null;
 
-			if (!string.IsNullOrWhiteSpace(FirstName))
-			{
-				if (!string.IsNullOrWhiteSpace(LastName))
-				{
-					if (!string.IsNullOrWhiteSpace(Email))
-					{
-						bool good = false;
-						var emps = new List<string>() { "Pluralsight", "Microsoft", "Google" };
+            var validationError = ValidateData();
+            if(validationError != null)
+                return new RegisterResponse(validationError);
 
-						good = Exp > 10 || HasBlog || Certifications.Count() > 3 || emps.Contains(Employer);
+            var emps = new List<string>() { "Pluralsight", "Microsoft", "Google" };
 
-						if (!good)
-						{
-							string emailDomain = Email.Split('@').Last();
-							var domains = new List<string>() { "aol.com", "prodigy.com", "compuserve.com" };
+            var good = Exp > 10 || HasBlog || Certifications.Count > 3 || emps.Contains(Employer);
 
-							if (!domains.Contains(emailDomain) && (!(Browser.Name == WebBrowser.BrowserName.InternetExplorer && Browser.MajorVersion < 9)))
-							{
-								good = true;
-							}
-						}
-						
-						bool appr = false;
+            if (!good)
+            {
+                string emailDomain = Email.Split('@').Last();
+                var domains = new List<string>() { "aol.com", "prodigy.com", "compuserve.com" };
 
-						if (good)
-						{
-							if (Sessions.Count() != 0)
-							{
-								foreach (var session in Sessions)
-								{
-									var ot = new List<string>() { "Cobol", "Punch Cards", "Commodore", "VBScript" };
+                if (!domains.Contains(emailDomain) && (!(Browser.Name == WebBrowser.BrowserName.InternetExplorer && Browser.MajorVersion < 9)))
+                {
+                    good = true;
+                }
+            }
 
-									foreach (var tech in ot)
-									{
-										if (session.Title.Contains(tech) || session.Description.Contains(tech))
-										{
-											session.Approved = false;
-											break;
-										}
-										else
-										{
-											session.Approved = true;
-											appr = true;
-										}
-									}
-								}
-							}
-							else
-							{
-								return new RegisterResponse(RegisterError.NoSessionsProvided);
-							}
+            bool appr = false;
 
-							if (appr)
-							{
-								if (Exp <= 1)
-								{
-									RegistrationFee = 500;
-								}
-								else if (Exp >= 2 && Exp <= 3)
-								{
-									RegistrationFee = 250;
-								}
-								else if (Exp >= 4 && Exp <= 5)
-								{
-									RegistrationFee = 100;
-								}
-								else if (Exp >= 6 && Exp <= 9)
-								{
-									RegistrationFee = 50;
-								}
-								else
-								{
-									RegistrationFee = 0;
-								}
+            if (!good)
+            {
+                return new RegisterResponse(RegisterError.SpeakerDoesNotMeetStandards);
+            }
+
+            if (!Sessions.Any())
+            {
+                return new RegisterResponse(RegisterError.NoSessionsProvided);
+            }
+
+            foreach (var session in Sessions)
+            {
+                var ot = new List<string>() { "Cobol", "Punch Cards", "Commodore", "VBScript" };
+
+                foreach (var tech in ot)
+                {
+                    if (session.Title.Contains(tech) || session.Description.Contains(tech))
+                    {
+                        session.Approved = false;
+                        break;
+                    }
+                    else
+                    {
+                        session.Approved = true;
+                        appr = true;
+                    }
+                }
+            }
 
 
-								try
-								{
-									speakerId = repository.SaveSpeaker(this);
-								}
-								catch (Exception e)
-								{
-								}
-							}
-							else
-							{
-								return new RegisterResponse(RegisterError.NoSessionsApproved);
-							}
-						}
-						else
-						{
-							return new RegisterResponse(RegisterError.SpeakerDoesNotMeetStandards);
-						}
-					}
-					else
-					{
-						return new RegisterResponse(RegisterError.EmailRequired);
-					}
-				}
-				else
-				{
-					return new RegisterResponse(RegisterError.LastNameRequired);
-				}
-			}
-			else
-			{
-				return new RegisterResponse(RegisterError.FirstNameRequired);
-			}
+            if (!appr)
+            {
+                return new RegisterResponse(RegisterError.NoSessionsApproved);
+            }
+            if (Exp <= 1)
+            {
+                RegistrationFee = 500;
+            }
+            else if (Exp >= 2 && Exp <= 3)
+            {
+                RegistrationFee = 250;
+            }
+            else if (Exp >= 4 && Exp <= 5)
+            {
+                RegistrationFee = 100;
+            }
+            else if (Exp >= 6 && Exp <= 9)
+            {
+                RegistrationFee = 50;
+            }
+            else
+            {
+                RegistrationFee = 0;
+            }
 
-			return new RegisterResponse((int)speakerId);
+
+            try
+            {
+                speakerId = repository.SaveSpeaker(this);
+            }
+            catch (Exception e)
+            {
+            }
+
+            return new RegisterResponse((int)speakerId);
 		}
-	}
+
+        private RegisterError? ValidateData()
+        {
+            if (string.IsNullOrWhiteSpace(FirstName))
+            {
+                return RegisterError.FirstNameRequired;
+            }
+            if (string.IsNullOrWhiteSpace(LastName))
+            {
+                return RegisterError.LastNameRequired;
+            }
+            if (string.IsNullOrWhiteSpace(Email))
+            {
+                return RegisterError.EmailRequired;
+            }
+         
+            return null;
+        }
+    }
 }
