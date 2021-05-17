@@ -34,40 +34,11 @@ namespace CodeLuau
                 return new RegisterResponse(validationError);
 
             if (!IsSpeakerApproved())
-            {
                 return new RegisterResponse(RegisterError.SpeakerDoesNotMeetStandards);
-            }
 
-            if (!Sessions.Any())
-            {
-                return new RegisterResponse(RegisterError.NoSessionsProvided);
-            }
-
-            bool sessionApproved = false;
-            foreach (var session in Sessions)
-            {
-                var ot = new List<string>() { "Cobol", "Punch Cards", "Commodore", "VBScript" };
-
-                foreach (var tech in ot)
-                {
-                    if (session.Title.Contains(tech) || session.Description.Contains(tech))
-                    {
-                        session.Approved = false;
-                        break;
-                    }
-                    else
-                    {
-                        session.Approved = true;
-                        sessionApproved = true;
-                    }
-                }
-            }
-
-
-            if (!sessionApproved)
-            {
+            if (!IsAnySessionApproved())
                 return new RegisterResponse(RegisterError.NoSessionsApproved);
-            }
+
             if (YearsOfExperience <= 1)
             {
                 RegistrationFee = 500;
@@ -103,18 +74,17 @@ namespace CodeLuau
         private RegisterError? ValidateData()
         {
             if (string.IsNullOrWhiteSpace(FirstName))
-            {
                 return RegisterError.FirstNameRequired;
-            }
+
             if (string.IsNullOrWhiteSpace(LastName))
-            {
                 return RegisterError.LastNameRequired;
-            }
+
             if (string.IsNullOrWhiteSpace(Email))
-            {
                 return RegisterError.EmailRequired;
-            }
-         
+
+            if(!Sessions.Any())
+                return RegisterError.NoSessionsProvided;
+
             return null;
         }
 
@@ -144,6 +114,29 @@ namespace CodeLuau
             var employers = new List<string>() { "Pluralsight", "Microsoft", "Google" };
             if (employers.Contains(Employer)) return true;
 
+            return false;
+        }
+
+        private bool IsAnySessionApproved()
+        {
+            foreach (var session in Sessions)
+            {
+                session.Approved = !IsSessionOldTechnology(session);
+            }
+            return Sessions.Any(e=>e.Approved);
+        }
+
+        private bool IsSessionOldTechnology(Session session)
+        {
+            var oldTechnologies = new List<string>() { "Cobol", "Punch Cards", "Commodore", "VBScript" };
+
+            foreach (var tech in oldTechnologies)
+            {
+                if (session.Title.Contains(tech) || session.Description.Contains(tech))
+                {
+                    return true;
+                }
+            }
             return false;
         }
     }
